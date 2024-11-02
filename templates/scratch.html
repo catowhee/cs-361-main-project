@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Custom Input with Suggestions</title>
+    <style>
+        .dropdown-menu {
+            display: none; /* Initially hide the dropdown */
+            position: absolute; /* Position the dropdown */
+            width: 100%; /* Match the input width */
+            z-index: 1000; /* Make sure it's on top */
+        }
+    </style>
+</head>
+<body>
+
+<div class="position-relative">
+    <input type="text" id="custom-input" class="form-control" placeholder="Type or select...">
+    <ul id="suggestions" class="dropdown-menu">
+        <li><a class="dropdown-item" href="#">Option 1</a></li>
+        <li><a class="dropdown-item" href="#">Option 2</a></li>
+        <li><a class="dropdown-item" href="#">Option 3</a></li>
+    </ul>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const input = document.getElementById('custom-input');
+    const suggestions = document.getElementById('suggestions');
+
+    input.addEventListener('focus', () => {
+        suggestions.style.display = 'block'; // Show dropdown on focus
+    });
+
+    input.addEventListener('blur', () => {
+        setTimeout(() => { // Delay to allow click event
+            suggestions.style.display = 'none'; // Hide dropdown when focus is lost
+        }, 150);
+    });
+
+    // Add click event to dropdown items
+    suggestions.addEventListener('click', (event) => {
+        if (event.target.tagName === 'A') {
+            input.value = event.target.textContent; // Set input value to clicked option
+            suggestions.style.display = 'none'; // Hide dropdown after selection
+        }
+    });
+</script>
+
+</body>
+</html>
