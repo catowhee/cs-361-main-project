@@ -2,7 +2,7 @@ $(document).ready(function(){
 
     console.log("hello");
 
-    //$('.js-example-basic-multiple').select2();
+    $('.js-example-basic-multiple').select2();
   
 
     // Initialize Flatpickr for date picker (date only)
@@ -48,8 +48,10 @@ $(document).ready(function(){
             $('#openings-table thead').append(header_row);
         }
 
-        const new_opening_row = get_opening_string(openings[openings.length - 1]);
-        console.log(new_opening_row);
+        const new_opening_string = get_opening_string(openings[openings.length - 1]);
+        const body_row = `<tr><td>${new_opening_string}</td></tr>`;
+        $('#openings-table tbody').append(body_row);
+        //console.log(new_opening_row);
     
     }
 
@@ -83,7 +85,7 @@ $(document).ready(function(){
 
         let start_hour = start_parts.find(part => part.type === 'hour').value;
         const start_am_pm =  start_hour >= 12 ? 'PM' : 'AM';
-        start_hour = start_hour == 0 ? 12 : start_hour % 12;
+        start_hour = start_hour % 12 || 12;
 
         const start_minute = start_parts.find(part => part.type === 'minute').value;
 
@@ -96,7 +98,7 @@ $(document).ready(function(){
 
         let end_hour = end_parts.find(part => part.type === 'hour').value;
         const end_am_pm =  end_hour >= 12 ? 'PM' : 'AM';
-        end_hour = end_hour == 0 ? 12 : end_hour % 12;
+        end_hour = end_hour % 12 || 12;
 
         const end_minute = end_parts.find(part => part.type === 'minute').value;
 
@@ -104,18 +106,10 @@ $(document).ready(function(){
         let opening_string = "";
         const same_date = start_month === end_month && start_day === end_day && start_year === end_year;
         if (same_date){
-            opening_string = `${start_weekday}, ${start_month}/${start_day}\n${start_hour}:${start_minute} ${start_am_pm} - ${end_hour}:${end_minute} ${end_am_pm}`;
+            opening_string = `${start_weekday}, ${start_month}/${start_day}<br>${start_hour}:${start_minute} ${start_am_pm} - ${end_hour}:${end_minute} ${end_am_pm}`;
         }
         return opening_string;
 
-
-
-        // Piecing together
-
-
-        // Monday, 11/12 | 12:00 PM - 1:00PM
-
-        return start_date_formatted;
     };
     
     const user_tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
