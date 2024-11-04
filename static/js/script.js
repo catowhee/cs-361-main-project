@@ -1,10 +1,10 @@
 $(document).ready(function(){
 
-    console.log("hello");
-
-    $('.js-example-basic-multiple').select2();
+    $('#table-timezones').select2({
+        placeholder: "Select time zones",
+        allowClear: true
+    });
   
-
     // Initialize Flatpickr for date picker (date only)
     flatpickr("#start-date", {
         enableTime: false,       
@@ -28,98 +28,137 @@ $(document).ready(function(){
         const start_date =  document.getElementById('start-date').value;
         const start_time =  document.getElementById('start-time').value;
         const duration =  document.getElementById('duration').value;
-        const opening = {
+        const opening = [{
             "start_date": start_date,
             "start_time": start_time,
             "duration": duration,
             "timezone": user_tz
+        }];
+        openings.push(opening);
+
+        // If timezones are selected, add data for each tz
+        if (selected_timezones.length > 1){
+            for (let i = 1; i < selected_timezones.length; i++){
+                const timezone_data = get_timezone_data(openings[openings.length - 1][0], selected_timezones[i]);
+                openings[openings.length - 1].push(timezone_data)
+            }
         }
-        openings.push(opening)
         console.log(openings);
     }
-    
+
+    function add_tz_to_data(timezone){
+        for (let i = 0; i < openings.length; i++){
+            const timezone_data = get_timezone_data(openings[0][0], timezone);
+            openings[i].push(timezone_data);
+        }
+        console.log(openings)
+    }
+
+    function remove_tz_from_data(timezone){
+        for (let i = 0; i < openings.length; i++){
+            openings[i] = openings[i].filter(opening => opening.timezone !== timezone)
+        }
+        console.log(openings)
+    }
+
+    function get_timezone_data(opening, timezone){
+        const DateTime = luxon.DateTime;
+        const source_str = `${opening["start_date"]}T${opening["start_time"]}:00`;
+        const source_date = DateTime.fromISO(source_str, { zone: user_tz });
+        const target_date = source_date.setZone(timezone);
+        //const target_date_formatted = target_date.toFormat("yyyy-MM-dd HH:mm:ss");
+        return {
+            "start_date": `${target_date.toFormat("yyyy-MM-dd")}`,
+            "start_time": `${target_date.toFormat("HH:mm")}`,
+            "duration": opening["duration"], // duplicated
+            "timezone": timezone
+        };
+    }
+
+
     function add_opening_to_table(){
-        const opening_table =  document.getElementById('openings-table');
-        // If table doesn't have data yet, we'll have additional steps
-        const empty_table = opening_table.querySelector('thead tr') == null;
-        if (empty_table) {
+        // Add header if needed
+        if ($('#openings-table thead tr').length == 0) {
             console.log("Fresh table");
-            const header_row = `<tr><th>${user_tz}</th></tr>`;
+            let header_row = ""
+            for (let i = 0; i < selected_timezones.length; i++) {
+                header_row += `<th>${selected_timezones[i]}</th>`;
+            }
+            header_row = '<tr>' + header_row + '</tr>';
             $('#openings-table thead').append(header_row);
         }
 
-        const new_opening_string = get_opening_string(openings[openings.length - 1]);
-        const body_row = `<tr><td>${new_opening_string}</td></tr>`;
+        // Add body data
+        const opening = openings[openings.length - 1];
+        let body_row = "";
+        for (let i = 0; i < opening.length; i++) {
+            body_row += `<td>${get_opening_string(opening[i])}</td>`;
+        }
+        body_row = "<tr>" + body_row + "</tr>";
         $('#openings-table tbody').append(body_row);
-        //console.log(new_opening_row);
     
     }
 
+
     function get_opening_string(opening){
 
-        const start = new Date(opening["start_date"] + "T" + opening["start_time"] + ":00");
-        const end = new Date(start);
-        end.setMinutes(end.getMinutes() + Number(opening["duration"]))
+        const DateTime = luxon.DateTime;
+        const start_str = `${opening["start_date"]}T${opening["start_time"]}:00`;
+        const start = DateTime.fromISO(start_str, { zone: opening.timezone});
+        const end = start.plus({minutes: opening.duration});
+        
+        const start_full_date = start.toFormat("DDD");
+        const start_weekday = start.toFormat("ccc");
+        const start_month = start.toFormat("LLL");
+        const start_day = start.toFormat("d");
+        const start_time = start.toFormat("t");
 
-        // Date formatting
-        const format_options = {
-            timeZone: opening["timezone"],
-            weekday: 'long',
-            month: 'numeric',
-            day: 'numeric',
-            year: 'numeric',
-            hour: 'numeric',
-            hourCycle: "h23",
-            //dayPeriod: 'narrow',
-            minute: 'numeric'
-        }
-        const formatter = new Intl.DateTimeFormat('en-US', format_options);
-
-        // Start parts!
-        const start_parts = formatter.formatToParts(start);
-        console.log(start_parts);
-        const start_weekday = start_parts.find(part => part.type === 'weekday').value;
-        const start_month = start_parts.find(part => part.type === 'month').value;
-        const start_day = start_parts.find(part => part.type === 'day').value;
-        const start_year = start_parts.find(part => part.type === 'year').value;
-
-        let start_hour = start_parts.find(part => part.type === 'hour').value;
-        const start_am_pm =  start_hour >= 12 ? 'PM' : 'AM';
-        start_hour = start_hour % 12 || 12;
-
-        const start_minute = start_parts.find(part => part.type === 'minute').value;
-
-        // End parts!
-        const end_parts = formatter.formatToParts(end);
-        const end_weekday = end_parts.find(part => part.type === 'weekday').value;
-        const end_month = end_parts.find(part => part.type === 'month').value;
-        const end_day = end_parts.find(part => part.type === 'day').value;
-        const end_year = end_parts.find(part => part.type === 'year').value;
-
-        let end_hour = end_parts.find(part => part.type === 'hour').value;
-        const end_am_pm =  end_hour >= 12 ? 'PM' : 'AM';
-        end_hour = end_hour % 12 || 12;
-
-        const end_minute = end_parts.find(part => part.type === 'minute').value;
-
+        const end_full_date = end.toFormat("DDD");
+        const end_weekday = end.toFormat("ccc");
+        const end_month = end.toFormat("LLL");
+        const end_day = end.toFormat("d");
+        const end_time = end.toFormat("t");
 
         let opening_string = "";
-        const same_date = start_month === end_month && start_day === end_day && start_year === end_year;
-        if (same_date){
-            opening_string = `${start_weekday}, ${start_month}/${start_day}<br>${start_hour}:${start_minute} ${start_am_pm} - ${end_hour}:${end_minute} ${end_am_pm}`;
-        }
-        return opening_string;
 
+        if (start_full_date === end_full_date) {
+            opening_string = `${start_weekday}, ${start_month} ${start_day}<br>${start_time} - ${end_time}`;
+        } else {
+            opening_string = `${start_weekday}, ${start_month} ${start_day} at ${start_time}<br>to ${end_weekday}, ${end_month} ${end_day} at ${end_time}`;
+        }
+
+        return opening_string;
     };
+
+ 
     
     const user_tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const openings = []
+    let openings = [];
+    let selected_timezones = [user_tz];
     const form = document.getElementById("add-opening-form");
     
-    // Add opening to openings array when form is submitted
+    // Add opening upon form submission
     form.addEventListener('submit', function(event){
         event.preventDefault();
         add_opening_to_data();
         add_opening_to_table();
+    });
+
+    // Add timezone
+    $('#table-timezones').on('select2:select',function(event){
+        const added_tz = event.params.data['id'];
+        add_tz_to_data(added_tz);
+        selected_timezones = $('#table-timezones').val();
+        selected_timezones.splice(0,0,user_tz);
+        //console.log(selected_timezones);
+    });
+
+    // Remove timezone
+    $('#table-timezones').on('select2:unselect',function(event){
+        const removed_tz = event.params.data['id'];
+        remove_tz_from_data(removed_tz);
+        const index = selected_timezones.indexOf(removed_tz);
+        selected_timezones.splice(index,1);
+        //console.log(selected_timezones);
     });
 });
