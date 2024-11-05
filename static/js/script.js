@@ -61,6 +61,27 @@ $(document).ready(function(){
         console.log(openings)
     }
 
+    function add_tz_to_table(tz){
+
+        // Add <tr>
+        new_header = `<th class="${tz}">${tz}</th>`
+        $("#openings-table thead tr").append(new_header);
+
+        // Add <td> to each body row
+        $("#openings-table tbody tr").each(function(index) {
+            let opening = openings[index];
+            let tz_to_add = opening[opening.length - 1]
+            new_td = `<td class="${tz_to_add.timezone}">${get_opening_string(tz_to_add)}</td>`
+            $(this).append(new_td);
+        });
+    }
+
+    function remove_tz_from_table(tz){
+        const remove = tz.replace(/\//g, "\\/");
+        $(`#openings-table tbody tr td.${remove}`).remove();
+        $(`#openings-table thead tr th.${remove}`).remove();
+    }
+
     function get_timezone_data(opening, timezone){
         const DateTime = luxon.DateTime;
         const source_str = `${opening["start_date"]}T${opening["start_time"]}:00`;
@@ -75,30 +96,38 @@ $(document).ready(function(){
         };
     }
 
-
     function add_opening_to_table(){
         // Add header if needed
         if ($('#openings-table thead tr').length == 0) {
             console.log("Fresh table");
+
+            // Add tz selector
+            $('#timezone-container').append(tz_picker);
             let header_row = ""
             for (let i = 0; i < selected_timezones.length; i++) {
-                header_row += `<th>${selected_timezones[i]}</th>`;
+                header_row += `<th class="${selected_timezones[i]}">${selected_timezones[i]}</th>`;
             }
-            header_row = '<tr>' + header_row + '</tr>';
+            header_row = '<tr><th></th>' + header_row + '</tr>';
             $('#openings-table thead').append(header_row);
         }
 
         // Add body data
         const opening = openings[openings.length - 1];
+        const delete_button = `
+            <td class="text-center trash-btn">
+                <button class="btn p-0 delete-button">
+                    <i class="bi bi-x text-danger" style="font-size: 24px"></i>
+                </button>
+            </td>
+        `;
         let body_row = "";
         for (let i = 0; i < opening.length; i++) {
-            body_row += `<td>${get_opening_string(opening[i])}</td>`;
+            body_row += `<td class="${opening[i].timezone}">${get_opening_string(opening[i])}</td>`;
         }
-        body_row = "<tr>" + body_row + "</tr>";
+        body_row = "<tr>" + delete_button + body_row  + "</tr>";
         $('#openings-table tbody').append(body_row);
     
     }
-
 
     function get_opening_string(opening){
 
@@ -130,12 +159,21 @@ $(document).ready(function(){
         return opening_string;
     };
 
+    function remove_row_from_data(index){
+        openings.splice(index, 1);
+        console.log(openings)
+    }
+
  
-    
     const user_tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     let openings = [];
     let selected_timezones = [user_tz];
     const form = document.getElementById("add-opening-form");
+    const tz_picker = `
+        <select id="table-timezones" class="form-control" name="timezones[]" multiple="multiple">
+            <option value="Europe/London">Europe/London</option>
+            <option value="America/New_York">America/New_York</option>
+        </select>`;
     
     // Add opening upon form submission
     form.addEventListener('submit', function(event){
@@ -148,9 +186,10 @@ $(document).ready(function(){
     $('#table-timezones').on('select2:select',function(event){
         const added_tz = event.params.data['id'];
         add_tz_to_data(added_tz);
-        selected_timezones = $('#table-timezones').val();
-        selected_timezones.splice(0,0,user_tz);
-        //console.log(selected_timezones);
+        selected_timezones.push(added_tz);
+        add_tz_to_table(added_tz);
+        //selected_timezones.splice(0,0,user_tz);
+        console.log(selected_timezones);
     });
 
     // Remove timezone
@@ -159,6 +198,21 @@ $(document).ready(function(){
         remove_tz_from_data(removed_tz);
         const index = selected_timezones.indexOf(removed_tz);
         selected_timezones.splice(index,1);
-        //console.log(selected_timezones);
+        console.log(selected_timezones);
+        remove_tz_from_table(removed_tz);
     });
+
+    //Remove row
+    $('body').on('click', '.delete-button', function(event) {
+        const removed_row = $(this).closest('tr');
+        const index = removed_row.index();
+        removed_row.remove();
+        console.log("Index to remove: ", index);
+        remove_row_from_data(index);
+        if (openings.length === 0) {
+            $('#openings-table thead tr').remove();
+            $('#table-timezones').remove();
+        }
+    });
+
 });

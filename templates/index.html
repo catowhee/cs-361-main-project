@@ -14,9 +14,13 @@
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    <!-- All other CSS-->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet"></link>
 
 </head>
 <body>
@@ -42,13 +46,10 @@
     </form>
     </div>
 
-    <div id="table-container" class="container mt-5">
+    <div id = "timezone-container" class="container mt-5">
+    </div>
 
-        <!-- Testing Select2-->
-        <select id="table-timezones" class="form-control" name="timezones[]" multiple="multiple">
-            <option value="Europe/London">Europe/London</option>
-            <option value="America/New_York">America/New_York</option>
-          </select>
+    <div id="table-container" class="container mt-5">
 
         <!-- Table -->
         <table id="openings-table" class="table">
