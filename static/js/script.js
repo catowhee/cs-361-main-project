@@ -103,6 +103,8 @@ $(document).ready(function(){
 
             // Add tz selector
             $('#timezone-container').append(tz_picker);
+            $('#table-timezones').select2();
+
             let header_row = ""
             for (let i = 0; i < selected_timezones.length; i++) {
                 header_row += `<th class="${selected_timezones[i]}">${selected_timezones[i]}</th>`;
