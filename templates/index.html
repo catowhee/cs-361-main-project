@@ -24,10 +24,24 @@
 
 </head>
 <body>
-    <div id = "form-container" class="container mt-5">
+    <div id = "header" class="container mt-5">
+        <h1>Time Slot Converter <i class="bi bi-info-circle ms-2 fs-5 text-info" data-bs-toggle="collapse" data-bs-target="#appInfo" aria-expanded="false" aria-controls="appInfo" ></i></h1>
+        <div class="container">
+            <!-- Div that will collapse or expand -->
+            <div class="collapse" id="appInfo">
+              <div class="card card-body">
+                <p>
+                Welcome to the <strong>Time Slot Converter!</strong> Setting up meetings can be a pain when your colleagues or clients live in different timezones, and we're here to help. <br><br>
+                Enter the <i>date</i>, <i>time</i>, and <i>duration</i> of each time slot, and your openings will be added to a time slot table in a readable format. <br><br>
+                Once you've added your first meeting, add a timezone with our timezone picker and your time slots will be displayed in additional timezones. <br><br>
+                Remove a time slot or timezone at any time!
+                </p>
+              </div>
+            </div>
+          </div>
+    </div>
+    <div id = "form-container" class="container mt-4">
         <form id="add-opening-form">
-        <h1>Add a meeting opening</h1>
-
         <!-- Date picker input field -->
         <label for="start-date">Choose a date:</label>
         <input type="text" id="start-date" class="form-control mb-3">
@@ -41,8 +55,20 @@
         <!-- Duration input field -->
         <label for="duration">Duration (minutes):</label>
         <input type="number" id="duration" class="form-control mb-3">
-    
-        <button type="submit" class="btn btn-primary">Add</button>   
+
+        <div id="first-time-message">
+            <div id="first-time-message-green">
+                <p>1. Enter the date, time, and duration of a time slot</p>
+                <p>2. Click "Add time slot"</p>
+                <p>3. Add additional time slots or timezones to the table</p>
+                <p>4. Remove time slots or timezones as needed!</p>
+            </div>
+            <div id="first-time-message-red">
+                <p><strong>Removed time slots must be added back through the form!</strong></p>
+                <p><strong>Clearing the time slot table cannot be undone!</strong></p>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Add time slot</button> 
     </form>
     </div>
 
@@ -57,6 +83,7 @@
             <tbody></tbody>
         </table>
     </div>
+    </body>
 
     <!-- Flatpickr JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>

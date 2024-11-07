@@ -103,7 +103,32 @@ $(document).ready(function(){
 
             // Add tz selector
             $('#timezone-container').append(tz_picker);
-            $('#table-timezones').select2();
+            $('#table-timezones').select2({
+                placeholder: "Choose additional timezones!"
+             });
+
+            // Add Clear Table Button
+            $('#add-opening-form').append(clear_table_button);
+            
+            // Add timezone
+            $('#table-timezones').on('select2:select',function(event){
+                const added_tz = event.params.data['id'];
+                add_tz_to_data(added_tz);
+                selected_timezones.push(added_tz);
+                add_tz_to_table(added_tz);
+                //selected_timezones.splice(0,0,user_tz);
+                console.log(selected_timezones);
+            });
+
+            // Remove timezone
+            $('#table-timezones').on('select2:unselect',function(event){
+                const removed_tz = event.params.data['id'];
+                remove_tz_from_data(removed_tz);
+                const index = selected_timezones.indexOf(removed_tz);
+                selected_timezones.splice(index,1);
+                console.log(selected_timezones);
+                remove_tz_from_table(removed_tz);
+            });
 
             let header_row = ""
             for (let i = 0; i < selected_timezones.length; i++) {
@@ -128,6 +153,7 @@ $(document).ready(function(){
         }
         body_row = "<tr>" + delete_button + body_row  + "</tr>";
         $('#openings-table tbody').append(body_row);
+
     
     }
 
@@ -174,34 +200,19 @@ $(document).ready(function(){
     const tz_picker = `
         <select id="table-timezones" class="form-control" name="timezones[]" multiple="multiple">
             <option value="Europe/London">Europe/London</option>
-            <option value="America/New_York">America/New_York</option>
+            <option value="Asia/Tokyo">Asia/Tokyo</option>
+            <option value="Australia/Sydney">Australia/Sydney</option>
+            <option value="Africa/Nairobi">Africa/Nairobi</option>
+            <option value="America/Denver">America/Denver</option>
         </select>`;
+    const clear_table_button = `<button id="clearTable" class="btn btn-danger">Clear table</button>`;
     
     // Add opening upon form submission
     form.addEventListener('submit', function(event){
         event.preventDefault();
+        $('#first-time-message').remove();
         add_opening_to_data();
         add_opening_to_table();
-    });
-
-    // Add timezone
-    $('#table-timezones').on('select2:select',function(event){
-        const added_tz = event.params.data['id'];
-        add_tz_to_data(added_tz);
-        selected_timezones.push(added_tz);
-        add_tz_to_table(added_tz);
-        //selected_timezones.splice(0,0,user_tz);
-        console.log(selected_timezones);
-    });
-
-    // Remove timezone
-    $('#table-timezones').on('select2:unselect',function(event){
-        const removed_tz = event.params.data['id'];
-        remove_tz_from_data(removed_tz);
-        const index = selected_timezones.indexOf(removed_tz);
-        selected_timezones.splice(index,1);
-        console.log(selected_timezones);
-        remove_tz_from_table(removed_tz);
     });
 
     //Remove row
@@ -210,11 +221,33 @@ $(document).ready(function(){
         const index = removed_row.index();
         removed_row.remove();
         console.log("Index to remove: ", index);
+        console.log(openings.length);
         remove_row_from_data(index);
         if (openings.length === 0) {
             $('#openings-table thead tr').remove();
-            $('#table-timezones').remove();
+            console.log("end of table!")
+            $('#timezone-container').children().remove();
+            selected_timezones = [];
+            selected_timezones.push(user_tz);
+
+            $('#clearTable').remove();
         }
+    });
+
+    //Clear table
+    $('body').on('click', '#clearTable', function(event) {
+        event.preventDefault();
+        console.log("Click");
+
+        $('#openings-table tbody tr').remove();
+        $('#openings-table thead tr').remove();
+        let openings = [];
+
+        $('#timezone-container').children().remove();
+        selected_timezones = [];
+        selected_timezones.push(user_tz);
+
+        $('#clearTable').remove();
     });
 
 });

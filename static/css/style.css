@@ -2,3 +2,11 @@
     width: 1px; 
     padding: 0;
 }
+
+#first-time-message-green {
+    color: green
+}
+
+#first-time-message-red {
+    color: red
+}
